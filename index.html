@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DiaWise — Smart Food Guidance for Diabetes</title>
+  <meta name="description" content="DiaWise helps people with diabetes make smarter food decisions before they eat — with AI-powered menu scanning, restaurant guidance, and personalized meal support." />
+  <meta property="og:title" content="DiaWise" />
+  <meta property="og:description" content="Know before you eat. AI food guidance built for diabetes." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://diawise.app" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,300;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --forest:       #1B3A2D;
+      --forest-mid:   #244D3C;
+      --forest-light: #2E6B50;
+      --mint:         #4CAF82;
+      --mint-pale:    #E8F5EE;
+      --mint-dim:     rgba(76,175,130,0.12);
+      --amber:        #E8922A;
+      --amber-pale:   #FEF4E8;
+      --cream:        #FAF6F0;
+      --warm-white:   #FFFDFB;
+      --charcoal:     #1A1A1A;
+      --slate:        #6B7280;
+      --border:       #E2DDD6;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--cream);
+      color: var(--charcoal);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 18px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(250,246,240,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s;
+    }
+    nav.scrolled { border-color: var(--border); }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--charcoal);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--forest-light), var(--forest));
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .nav-logo-icon svg { width: 18px; height: 18px; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--charcoal); }
+
+    .nav-cta {
+      background: var(--forest) !important;
+      color: white !important;
+      padding: 10px 22px;
+      border-radius: 100px;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.4px;
+      transition: background 0.2s !important;
+    }
+    .nav-cta:hover { background: var(--forest-light) !important; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 40px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 65% 40%, rgba(76,175,130,0.10) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 50% at 15% 75%, rgba(232,146,42,0.06) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 85% 85%, rgba(27,58,45,0.06) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .hero-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='56' height='56' viewBox='0 0 56 56' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%234CAF82' fill-opacity='0.025'%3E%3Ccircle cx='28' cy='28' r='1.5'/%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      max-width: 1100px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--mint-dim);
+      border: 1px solid rgba(76,175,130,0.3);
+      color: var(--forest-light);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.1s;
+    }
+
+    .hero-badge-dot {
+      width: 6px; height: 6px;
+      background: var(--mint);
+      border-radius: 50%;
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 500;
+      line-height: 1.15;
+      color: var(--charcoal);
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.2s;
+    }
+    .hero h1 em { font-style: italic; color: var(--forest-light); }
+
+    .hero-sub {
+      font-size: 17px;
+      line-height: 1.75;
+      color: var(--slate);
+      margin-bottom: 40px;
+      max-width: 440px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.35s;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.5s;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--forest-light), var(--forest));
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 16px 32px;
+      border-radius: 14px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(27,58,45,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(27,58,45,0.4); }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      color: var(--charcoal);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 16px 28px;
+      border-radius: 14px;
+      text-decoration: none;
+      border: 1.5px solid var(--border);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--mint); background: var(--mint-dim); }
+
+    .store-note {
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--slate);
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.65s;
+    }
+
+    /* ── PHONE MOCKUP ── */
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.4s;
+    }
+
+    .phone-frame {
+      width: 264px;
+      background: #111;
+      border-radius: 46px;
+      padding: 14px;
+      box-shadow: 0 48px 90px rgba(27,58,45,0.22), 0 0 0 1px rgba(255,255,255,0.05) inset;
+      position: relative;
+    }
+
+    .phone-screen {
+      background: var(--cream);
+      border-radius: 34px;
+      overflow: hidden;
+      aspect-ratio: 9/19.5;
+      position: relative;
+    }
+
+    .phone-notch {
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 80px; height: 28px;
+      background: #111;
+      border-radius: 100px;
+      z-index: 10;
+    }
+
+    .phone-content {
+      padding: 58px 14px 14px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .phone-header {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--charcoal);
+      padding-bottom: 9px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .phone-scan-area {
+      background: var(--forest);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .phone-scan-label {
+      font-size: 7.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 3px;
+    }
+
+    .phone-scan-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: 7px;
+      font-size: 8.5px;
+      font-weight: 600;
+    }
+
+    .phone-scan-item.safe { background: rgba(76,175,130,0.2); color: #7ee8b0; }
+    .phone-scan-item.caution { background: rgba(232,146,42,0.2); color: #f5be6e; }
+    .phone-scan-item.avoid { background: rgba(220,80,80,0.15); color: #f09090; }
+
+    .phone-scan-badge { font-size: 6.5px; padding: 2px 6px; border-radius: 100px; font-weight: 700; }
+    .safe .phone-scan-badge { background: rgba(76,175,130,0.35); color: #7ee8b0; }
+    .caution .phone-scan-badge { background: rgba(232,146,42,0.35); color: #f5be6e; }
+    .avoid .phone-scan-badge { background: rgba(220,80,80,0.3); color: #f09090; }
+
+    .phone-tip {
+      background: white;
+      border-radius: 9px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+    }
+
+    .phone-tip-label { font-size: 7px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--slate); margin-bottom: 4px; }
+    .phone-tip-text { font-size: 8px; line-height: 1.5; color: var(--charcoal); }
+    .phone-tip-text strong { color: var(--forest-light); }
+
+    .phone-ask-btn {
+      background: linear-gradient(135deg, var(--forest-light), var(--forest));
+      color: white;
+      font-size: 8.5px;
+      font-weight: 700;
+      padding: 8px;
+      border-radius: 8px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .phone-floating-badge {
+      position: absolute;
+      bottom: -18px; right: -28px;
+      background: white;
+      border-radius: 14px;
+      padding: 10px 14px;
+      box-shadow: 0 8px 28px rgba(27,58,45,0.14);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .phone-badge-icon {
+      width: 30px; height: 30px;
+      background: var(--mint-pale);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── TRUST BAR ── */
+    .trust-bar {
+      padding: 28px 40px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--mint-pale);
+    }
+
+    .trust-bar-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+
+    .trust-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; color: var(--slate); }
+
+    .trust-item-icon {
+      width: 32px; height: 32px;
+      background: white;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border);
+      font-size: 16px;
+    }
+
+    /* ── SECTIONS ── */
+    section { padding: 100px 40px; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--forest-light); margin-bottom: 16px; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 42px); font-weight: 500; line-height: 1.2; color: var(--charcoal); margin-bottom: 16px; }
+    .section-sub { font-size: 17px; color: var(--slate); line-height: 1.7; max-width: 560px; margin-bottom: 64px; }
+
+    /* ── FEATURES ── */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+    .feature-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(27,58,45,0.08); }
+
+    .feature-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 20px; }
+    .feature-card h3 { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 500; color: var(--charcoal); margin-bottom: 10px; }
+    .feature-card p { font-size: 14px; line-height: 1.75; color: var(--slate); }
+
+    /* ── HOW IT WORKS ── */
+    .steps-section { background: var(--forest); color: white; }
+    .steps-section .section-label { color: var(--mint); }
+    .steps-section .section-title { color: white; }
+    .steps-section .section-sub { color: rgba(255,255,255,0.55); }
+
+    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; position: relative; }
+    .steps-grid::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: calc(16.6% + 24px);
+      right: calc(16.6% + 24px);
+      height: 1px;
+      background: linear-gradient(90deg, var(--mint), transparent 50%, var(--mint));
+      opacity: 0.25;
+    }
+
+    .step { display: flex; flex-direction: column; gap: 16px; }
+    .step-number {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: rgba(76,175,130,0.12);
+      border: 1px solid rgba(76,175,130,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 500;
+      color: var(--mint);
+    }
+    .step h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 500; color: white; }
+    .step p { font-size: 14px; line-height: 1.75; color: rgba(255,255,255,0.52); }
+
+    /* ── TOOLS ── */
+    .tools-section { background: var(--warm-white); }
+    .tools-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .tool-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 18px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--charcoal);
+      transition: all 0.2s;
+    }
+    .tool-chip:hover { border-color: var(--mint); background: var(--mint-pale); transform: translateY(-1px); }
+    .tool-chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── FASTING SPOTLIGHT ── */
+    .fasting-section { background: linear-gradient(135deg, var(--forest-mid) 0%, var(--forest) 100%); color: white; }
+    .fasting-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .fasting-section .section-label { color: var(--mint); }
+    .fasting-section .section-title { color: white; margin-bottom: 20px; }
+    .fasting-section p { font-size: 16px; line-height: 1.8; color: rgba(255,255,255,0.65); margin-bottom: 16px; }
+
+    .fasting-features { display: flex; flex-direction: column; gap: 14px; margin-top: 32px; }
+    .fasting-feature { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+    .fasting-feature-icon { width: 32px; height: 32px; background: rgba(76,175,130,0.15); border: 1px solid rgba(76,175,130,0.25); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+    .fasting-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+    .fasting-card-header { display: flex; align-items: center; gap: 12px; }
+    .fasting-card-icon { width: 40px; height: 40px; background: var(--mint-dim); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .fasting-card-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 500; color: white; }
+    .fasting-card-sub { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+    .fasting-row { display: flex; flex-direction: column; gap: 10px; }
+    .fasting-item { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+    .fasting-item-name { color: rgba(255,255,255,0.8); font-weight: 500; }
+    .fasting-tag { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 100px; }
+    .fasting-tag.iftar { background: rgba(76,175,130,0.25); color: #7ee8b0; }
+    .fasting-tag.suhoor { background: rgba(232,146,42,0.25); color: #f5be6e; }
+    .fasting-tag.avoid { background: rgba(220,80,80,0.2); color: #f09090; }
+
+    /* ── COMING SOON ── */
+    .coming-soon-section { text-align: center; }
+    .store-badges { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 48px; }
+    .store-badge { display: inline-flex; align-items: center; gap: 12px; background: var(--charcoal); color: white; padding: 14px 28px; border-radius: 14px; text-decoration: none; opacity: 0.45; cursor: default; }
+    .store-badge-text { text-align: left; }
+    .store-badge-text small { display: block; font-size: 10px; opacity: 0.7; letter-spacing: 0.5px; }
+    .store-badge-text strong { display: block; font-size: 16px; font-weight: 700; }
+    .coming-soon-label { display: inline-block; background: var(--mint-dim); border: 1px solid rgba(76,175,130,0.3); color: var(--forest-light); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 100px; margin-top: 24px; }
+
+    /* ── NOTIFY ── */
+    .notify-section { background: linear-gradient(135deg, var(--forest) 0%, var(--forest-light) 100%); color: white; text-align: center; }
+    .notify-section .section-label { color: rgba(255,255,255,0.45); }
+    .notify-section .section-title { color: white; }
+    .notify-sub { font-size: 17px; color: rgba(255,255,255,0.65); line-height: 1.7; max-width: 480px; margin: 0 auto 40px; }
+    .notify-form { display: flex; gap: 12px; justify-content: center; max-width: 440px; margin: 0 auto; }
+    .notify-form input[type="email"] { flex: 1; padding: 14px 20px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; }
+    .notify-form input::placeholder { color: rgba(255,255,255,0.35); }
+    .notify-form input:focus { border-color: rgba(255,255,255,0.5); }
+    .notify-form button { padding: 14px 24px; background: white; color: var(--forest); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; transition: opacity 0.2s, transform 0.2s; white-space: nowrap; }
+    .notify-form button:hover { opacity: 0.92; transform: translateY(-1px); }
+    .notify-form button:disabled { opacity: 0.6; cursor: default; transform: none; }
+    .notify-privacy { margin-top: 14px; font-size: 12px; color: rgba(255,255,255,0.4); }
+    .notify-success { display: none; align-items: center; justify-content: center; gap: 12px; padding: 16px 28px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 14px; max-width: 440px; margin: 0 auto; }
+    .notify-success.visible { display: flex; }
+    .notify-success-icon { width: 32px; height: 32px; background: rgba(76,175,130,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+    .notify-success p { font-size: 15px; font-weight: 600; color: white; text-align: left; line-height: 1.4; }
+    .notify-success p small { display: block; font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.55); margin-top: 2px; }
+
+    /* ── FOOTER ── */
+    footer { padding: 48px 40px; border-top: 1px solid var(--border); }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+    .footer-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500; color: var(--charcoal); text-decoration: none; }
+    .footer-links { display: flex; gap: 28px; list-style: none; }
+    .footer-links a { font-size: 13px; color: var(--slate); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--charcoal); }
+    .footer-copy { font-size: 13px; color: var(--slate); }
+
+    .disclaimer-bar { background: var(--mint-pale); border-top: 1px solid var(--border); padding: 16px 40px; text-align: center; font-size: 11px; color: var(--slate); line-height: 1.6; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      .hero { padding: 100px 24px 60px; }
+      .hero-inner { grid-template-columns: 1fr; gap: 56px; }
+      .hero-visual { order: -1; }
+      .phone-frame { width: 220px; }
+      section { padding: 72px 24px; }
+      .features-grid { grid-template-columns: 1fr; gap: 14px; }
+      .steps-grid { grid-template-columns: 1fr; gap: 32px; }
+      .steps-grid::before { display: none; }
+      .fasting-inner { grid-template-columns: 1fr; gap: 40px; }
+      .trust-bar { padding: 24px; }
+      .trust-bar-inner { gap: 20px; }
+      .notify-form { flex-direction: column; }
+      footer { padding: 32px 24px; }
+      .footer-inner { flex-direction: column; gap: 16px; text-align: center; }
+      .footer-links { justify-content: center; }
+      .disclaimer-bar { padding: 16px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="13" r="6.5" stroke="white" stroke-width="1.5" opacity="0.5"/>
+        <path d="M9 13l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    DiaWise
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#tools">Cuisines</a></li>
+    <li><a href="#fasting">Fasting Mode</a></li>
+    <li><a href="#notify" class="nav-cta">Get Early Access</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div>
+        Coming Soon to iOS &amp; Android
+      </div>
+      <h1>Know before<br />you <em>eat.</em></h1>
+      <p class="hero-sub">
+        DiaWise is the AI food companion built for diabetes — helping you make smarter decisions at restaurants, in the kitchen, and at the grocery store. Before you take a single bite.
+      </p>
+      <div class="hero-actions">
+        <a href="#notify" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Get Early Access
+        </a>
+        <a href="#features" class="btn-secondary">
+          Learn More
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+      <p class="store-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:-2px;margin-right:4px">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Your health data stays on your device. Private by design.
+      </p>
+    </div>
+
+    <div class="hero-visual">
+      <div style="position:relative;">
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="phone-notch"></div>
+            <div class="phone-content">
+              <div class="phone-header">Scan Menu</div>
+              <div class="phone-scan-area">
+                <div class="phone-scan-label">AI Rankings — Italian Bistro</div>
+                <div class="phone-scan-item safe">
+                  <span>Grilled Salmon</span>
+                  <span class="phone-scan-badge">✓ Best Pick</span>
+                </div>
+                <div class="phone-scan-item safe">
+                  <span>Caesar Salad (no croutons)</span>
+                  <span class="phone-scan-badge">✓ Safe</span>
+                </div>
+                <div class="phone-scan-item caution">
+                  <span>Pasta Primavera</span>
+                  <span class="phone-scan-badge">⚠ Portion</span>
+                </div>
+                <div class="phone-scan-item avoid">
+                  <span>Tiramisu</span>
+                  <span class="phone-scan-badge">✕ Skip</span>
+                </div>
+              </div>
+              <div class="phone-tip">
+                <div class="phone-tip-label">Server Tip</div>
+                <div class="phone-tip-text">Ask for <strong>sauce on the side</strong> and substitute pasta for <strong>extra vegetables</strong>.</div>
+              </div>
+              <div class="phone-ask-btn">✦ Ask a Follow-Up Question</div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-floating-badge">
+          <div class="phone-badge-icon">🥗</div>
+          <div>
+            <div style="font-size:9px;color:var(--slate);font-weight:500;">Glucose Impact</div>
+            <div style="font-size:12px;font-weight:700;color:var(--charcoal);">Low — Great choice</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-item"><div class="trust-item-icon">🔒</div>Health data stays on-device</div>
+    <div class="trust-item"><div class="trust-item-icon">📸</div>Instant menu scanning</div>
+    <div class="trust-item"><div class="trust-item-icon">🌍</div>20+ cuisine types supported</div>
+
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-label">What It Does</div>
+    <h2 class="section-title">Every food decision,<br /><em style="font-family:'Playfair Display',serif;font-style:italic;">guided</em> before you make it.</h2>
+    <p class="section-sub">Six tools designed to put you in control — at the restaurant, in the kitchen, and everywhere in between.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:var(--mint-dim);">📸</div>
+        <h3>Menu Scanner</h3>
+        <p>Photo a restaurant menu and get instant AI rankings of the safest dishes for your glucose — plus what to ask your server to make any dish more diabetes-friendly.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(232,146,42,0.1);">🍳</div>
+        <h3>Cook Smart</h3>
+        <p>Tell us what's in your fridge and get low-glycemic recipes built around your ingredients, with clear explanations of the glucose impact of each dish.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:var(--mint-dim);">💬</div>
+        <h3>Ask Anything</h3>
+        <p>A food-focused AI companion that answers questions like "Is brown rice okay for me?" or "What's a good breakfast before my morning walk?" in plain language.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(107,143,181,0.1);">🛒</div>
+        <h3>Grocery Guide</h3>
+        <p>Scan a nutrition label or search any food to understand exactly how it affects blood sugar. Build smarter shopping lists with confidence.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(139,107,168,0.1);">✈️</div>
+        <h3>Travel Mode</h3>
+        <p>Traveling abroad? Get food guidance tailored to local cuisines — from Turkish breakfast to Japanese izakaya — with culturally accurate recommendations.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(232,146,42,0.1);">📋</div>
+        <h3>Doctor Prep</h3>
+        <p>Generate a clear, organized summary of your eating patterns and food choices to share with your endocrinologist or dietitian at your next visit.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works" class="steps-section">
+  <div class="section-inner">
+    <div class="section-label">How It Works</div>
+    <h2 class="section-title">From menu to<br />decision in seconds.</h2>
+    <p class="section-sub">Open DiaWise the moment you need it. No complicated setup. No learning curve.</p>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Show DiaWise the menu</h3>
+        <p>Take a photo of a restaurant menu, upload a recipe, or simply describe what you're considering eating. DiaWise understands context.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Get ranked recommendations</h3>
+        <p>DiaWise analyzes every dish and ranks your options — safest first — with a plain-language explanation of the glucose impact of each choice.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Order with confidence</h3>
+        <p>Get specific server questions to ask, portion guidance, and substitution suggestions that turn any restaurant into a diabetes-friendly experience.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS / CUISINES -->
+<section id="tools" class="tools-section">
+  <div class="section-inner">
+    <div class="section-label">Cuisine Intelligence</div>
+    <h2 class="section-title">Built for how<br />the world actually eats.</h2>
+    <p class="section-sub">DiaWise has deep knowledge across 20+ global cuisines — not just Western food pyramids. Real guidance for real meals.</p>
+    <div class="tools-grid">
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:var(--mint)"></div>Turkish &amp; Ottoman</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:var(--amber)"></div>Mediterranean</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:var(--mint)"></div>Middle Eastern</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:#6B8FB5"></div>South Asian</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:var(--amber)"></div>East Asian</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:var(--mint)"></div>Mexican &amp; Latin</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:#8B6BA8"></div>West African</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:var(--amber)"></div>Italian</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:var(--mint)"></div>Halal-conscious</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:#6B8FB5"></div>Japanese</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:var(--amber)"></div>American Comfort</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:var(--mint)"></div>Vegetarian &amp; Vegan</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:#8B6BA8"></div>Greek &amp; Levantine</div>
+      <div class="tool-chip"><div class="tool-chip-dot" style="background:var(--amber)"></div>Breakfast &amp; Brunch</div>
+    </div>
+  </div>
+</section>
+
+<!-- FASTING SPOTLIGHT -->
+<section id="fasting" class="fasting-section">
+  <div class="fasting-inner">
+    <div>
+      <div class="section-label">Fasting Mode</div>
+      <h2 class="section-title">Built for Ramadan.<br />Built for <em style="font-style:italic;">every</em> fast.</h2>
+      <p>Managing diabetes during Ramadan is one of the most complex food challenges a person can face. DiaWise's Fasting Mode was designed with this in mind — and works for intermittent fasting and pre-lab fasting too.</p>
+      <p>Get Suhoor and Iftar meal plans optimized for stable glucose across the fasting hours, with safe foods to break the fast and what to avoid when hunger peaks.</p>
+      <div class="fasting-features">
+        <div class="fasting-feature"><div class="fasting-feature-icon">🌙</div>Ramadan Suhoor &amp; Iftar meal guidance</div>
+        <div class="fasting-feature"><div class="fasting-feature-icon">⏱</div>Intermittent fasting eating windows</div>
+        <div class="fasting-feature"><div class="fasting-feature-icon">🩺</div>Pre-lab and procedure fasting support</div>
+        <div class="fasting-feature"><div class="fasting-feature-icon">⚠️</div>Hypoglycemia risk alerts during fasting</div>
+      </div>
+    </div>
+
+    <div class="fasting-card">
+      <div class="fasting-card-header">
+        <div class="fasting-card-icon">🌙</div>
+        <div>
+          <div class="fasting-card-title">Ramadan Guidance</div>
+          <div class="fasting-card-sub">Day 14 · Type 2 Diabetes</div>
+        </div>
+      </div>
+      <div class="fasting-row">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);padding-bottom:2px;">Suhoor Picks</div>
+        <div class="fasting-item"><span class="fasting-item-name">Eggs with whole grain bread</span><span class="fasting-tag suhoor">Suhoor</span></div>
+        <div class="fasting-item"><span class="fasting-item-name">Greek yogurt + walnuts</span><span class="fasting-tag suhoor">Suhoor</span></div>
+      </div>
+      <div class="fasting-row">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);padding-bottom:2px;">Iftar Picks</div>
+        <div class="fasting-item"><span class="fasting-item-name">Lentil soup (start here)</span><span class="fasting-tag iftar">Iftar</span></div>
+        <div class="fasting-item"><span class="fasting-item-name">Grilled chicken + tabbouleh</span><span class="fasting-tag iftar">Iftar</span></div>
+        <div class="fasting-item"><span class="fasting-item-name">Katayef / sweet pastries</span><span class="fasting-tag avoid">Limit</span></div>
+      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;">Always consult your physician before adjusting medications during Ramadan.</div>
+    </div>
+  </div>
+</section>
+
+<!-- COMING SOON -->
+<section class="coming-soon-section">
+  <div class="section-inner">
+    <div class="section-label">Launch</div>
+    <h2 class="section-title">Coming to iOS &amp; Android.</h2>
+    <p class="section-sub" style="margin:0 auto;">We're putting the finishing touches on DiaWise. Join the early access list to be notified the moment it launches.</p>
+    <div class="store-badges">
+      <div class="store-badge">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        <div class="store-badge-text"><small>Download on the</small><strong>App Store</strong></div>
+      </div>
+      <div class="store-badge">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M3.18 23.76c.3.17.65.19.98.08L14.93 12 3.87.17A1.14 1.14 0 003 1.24v21.52c0 .38.07.74.18 1zM16.54 13.6l-2.83 2.83 3.48 3.48c.71.49 1.65.27 2.06-.46l1.2-2.06c.4-.72.15-1.62-.57-2.09L16.54 13.6zm0-3.2l3.34-2.7c.72-.47.97-1.37.57-2.1l-1.2-2.06c-.41-.73-1.35-.95-2.06-.46L13.7 8.56l2.84 2.84z"/></svg>
+        <div class="store-badge-text"><small>Get it on</small><strong>Google Play</strong></div>
+      </div>
+    </div>
+    <div class="coming-soon-label">Coming Soon</div>
+  </div>
+</section>
+
+<!-- NOTIFY -->
+<section id="notify" class="notify-section">
+  <div class="section-inner">
+    <div class="section-label">Early Access</div>
+    <h2 class="section-title">Be the first to know.</h2>
+    <p class="notify-sub">Join the early access list. We'll notify you the moment DiaWise is available — no spam, just one email when it launches.</p>
+    <form class="notify-form" id="notify-form" onsubmit="handleSubscribe(event)">
+      <div style="position:absolute;left:-5000px;" aria-hidden="true">
+        <input type="text" name="b_honeypot" tabindex="-1" value="">
+      </div>
+      <input type="email" id="notify-email" name="EMAIL" placeholder="your@email.com" required autocomplete="email" />
+      <button type="submit" id="notify-btn">Notify Me</button>
+    </form>
+    <div class="notify-success" id="notify-success">
+      <div class="notify-success-icon">✓</div>
+      <p>You're on the list!<small>We'll send one email the moment DiaWise launches.</small></p>
+    </div>
+    <p class="notify-privacy" id="notify-privacy">No spam. Unsubscribe anytime. We respect your privacy.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <a href="/" class="footer-logo">DiaWise</a>
+    <ul class="footer-links">
+      <li><a href="privacy.html">Privacy Policy</a></li>
+      <li><a href="mailto:hello@diawise.app">Contact</a></li>
+    </ul>
+    <p class="footer-copy">© 2026 Livanelli LLC. All rights reserved.</p>
+  </div>
+</footer>
+
+<div class="disclaimer-bar">
+  DiaWise is a food guidance companion, not a medical device. It does not provide medical advice, diagnose conditions, or recommend medication changes.
+  Always consult your healthcare team before making changes to your diabetes management. In a medical emergency, call 911.
+</div>
+
+<script>
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 20); });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.style.opacity = '1'; entry.target.style.transform = 'translateY(0)'; }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.feature-card, .step, .tool-chip').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    observer.observe(el);
+  });
+
+  async function handleSubscribe(e) {
+    e.preventDefault();
+    const email = document.getElementById('notify-email').value.trim();
+    const btn = document.getElementById('notify-btn');
+    if (!email) return;
+    btn.textContent = 'Submitting…';
+    btn.disabled = true;
+    // Wire up your Mailchimp endpoint here (same pattern as coparentshield.net)
+    await new Promise(r => setTimeout(r, 800));
+    document.getElementById('notify-form').style.display = 'none';
+    document.getElementById('notify-privacy').style.display = 'none';
+    document.getElementById('notify-success').classList.add('visible');
+  }
+</script>
+</body>
+</html>
